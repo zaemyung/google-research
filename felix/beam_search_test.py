@@ -17,7 +17,7 @@
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from felix import beam_search
+import beam_search
 
 
 class BeamSearchTest(parameterized.TestCase):

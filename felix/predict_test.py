@@ -22,7 +22,7 @@ from absl.testing import parameterized
 import numpy as np
 from official.nlp.bert import configs
 
-from felix import predict
+import predict
 
 FLAGS = flags.FLAGS
 

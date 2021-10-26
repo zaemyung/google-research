@@ -20,7 +20,7 @@ import numpy as np
 from official.nlp.bert import configs
 from official.nlp.modeling import networks
 
-from felix import felix_tagger
+import felix_tagger
 
 
 class FelixTaggerTest(parameterized.TestCase):

@@ -20,7 +20,7 @@ from official.nlp.bert import configs as bert_configs
 from official.nlp.modeling import networks
 import tensorflow as tf
 
-from felix import felix_models
+import felix_models
 
 
 class FelixModelsTest(parameterized.TestCase):

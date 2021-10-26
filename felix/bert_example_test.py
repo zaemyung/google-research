@@ -21,9 +21,9 @@ from absl import flags
 from absl.testing import absltest
 import tensorflow as tf
 
-from felix import bert_example
-from felix import insertion_converter
-from felix import pointing_converter
+import bert_example
+import insertion_converter
+import pointing_converter
 
 FLAGS = flags.FLAGS
 

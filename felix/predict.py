@@ -29,13 +29,13 @@ import numpy as np
 from official.nlp.bert import configs
 import tensorflow as tf
 
-from felix import beam_search
-from felix import example_builder_for_felix_insert
-from felix import felix_constants as constants
-from felix import felix_models
-from felix import insertion_converter
-from felix import preprocess
-from felix import utils
+import beam_search
+import example_builder_for_felix_insert
+import felix_constants as constants
+import felix_models
+import insertion_converter
+import preprocess
+import utils
 
 
 class FelixPredictor:

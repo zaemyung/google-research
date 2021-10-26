@@ -21,8 +21,8 @@ from typing import Callable, Iterator, Mapping, MutableSequence, NamedTuple, Opt
 from absl import logging
 import tensorflow as tf
 
-from felix import felix_constants as constants
-from felix import tokenization
+import felix_constants as constants
+import tokenization
 
 FeedDict = Mapping[str, Sequence[Sequence[float]]]
 SourceTargetPair = Tuple[MutableSequence[str], str]

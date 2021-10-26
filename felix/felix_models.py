@@ -24,7 +24,7 @@ from official.nlp.modeling import models
 from official.nlp.modeling import networks
 import tensorflow as tf
 
-from felix import felix_tagger
+import felix_tagger
 
 
 class BertPretrainLossAndMetricLayer(tf.keras.layers.Layer):

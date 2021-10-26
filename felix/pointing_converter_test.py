@@ -20,7 +20,7 @@ import string
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from felix import pointing_converter
+import pointing_converter
 
 
 class PointingConverterTest(parameterized.TestCase):

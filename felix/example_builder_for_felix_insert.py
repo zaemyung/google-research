@@ -21,10 +21,10 @@ from typing import List, Mapping, Optional, Sequence, Tuple
 
 import tensorflow as tf
 
-from felix import converter_for_felix_insert as converter
-from felix import felix_constants as constants
-from felix import tokenization
-from felix import utils
+import converter_for_felix_insert as converter
+import felix_constants as constants
+import tokenization
+import utils
 
 
 class TaggingBertExample:

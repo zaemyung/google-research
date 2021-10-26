@@ -22,9 +22,9 @@ from official.common import distribute_utils
 from official.nlp.bert import configs
 import tensorflow as tf
 
-from felix import felix_flags  # pylint: disable=unused-import
-from felix import predict
-from felix import utils
+import felix_flags  # pylint: disable=unused-import
+import predict
+import utils
 
 FLAGS = flags.FLAGS
 

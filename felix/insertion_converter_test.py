@@ -17,7 +17,7 @@
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from felix import insertion_converter
+import insertion_converter
 
 
 class IntegrationInsertionConverterTest(parameterized.TestCase):

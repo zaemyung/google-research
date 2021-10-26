@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from absl.testing import absltest
-from felix import converter_for_felix_insert as converter
-from felix import felix_constants as constants
+import converter_for_felix_insert as converter
+import felix_constants as constants
 
 
 class FelixinsertConverterTest(absltest.TestCase):

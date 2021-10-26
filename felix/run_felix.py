@@ -25,9 +25,9 @@ from official.nlp.bert import configs
 from official.utils.misc import keras_utils
 import tensorflow as tf
 
-from felix import felix_flags  # pylint: disable=unused-import
-from felix import felix_input_pipeline
-from felix import felix_models
+import felix_flags  # pylint: disable=unused-import
+import felix_input_pipeline
+import felix_models
 
 FLAGS = flags.FLAGS
 _CHECKPOINT_FILE_NAME = 'felix_model.ckpt'

@@ -24,9 +24,9 @@ from absl import app
 from absl import flags
 from absl import logging
 import tensorflow as tf
-from felix import felix_flags  # pylint: disable=unused-import
-from felix import preprocess
-from felix import utils
+import felix_flags  # pylint: disable=unused-import
+import preprocess
+import utils
 FLAGS = flags.FLAGS
 # Preprocessing specific flags are listed below.
 # See felix_flags.py for the other flags.

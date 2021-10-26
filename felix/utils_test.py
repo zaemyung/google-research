@@ -20,8 +20,8 @@ from absl.testing import absltest
 from absl.testing import parameterized
 import tensorflow as tf
 
-from felix import tokenization
-from felix import utils
+import tokenization
+import utils
 
 
 class UtilsTest(parameterized.TestCase):

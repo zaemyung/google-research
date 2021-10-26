@@ -21,8 +21,8 @@ operations and token-level insertions.
 
 from typing import List, Optional, Sequence, Tuple
 
-from felix import felix_constants as constants
-from felix import phrase_vocabulary_optimization_utils as phrase_utils
+import felix_constants as constants
+import phrase_vocabulary_optimization_utils as phrase_utils
 
 
 def compute_edits_and_insertions(

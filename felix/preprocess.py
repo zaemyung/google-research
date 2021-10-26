@@ -15,11 +15,11 @@
 
 """Utility functions for preprocessing Felix* examples."""
 from typing import Optional, Union
-from felix import bert_example
-from felix import example_builder_for_felix_insert
-from felix import insertion_converter
-from felix import pointing_converter
-from felix import utils
+import bert_example
+import example_builder_for_felix_insert
+import insertion_converter
+import pointing_converter
+import utils
 
 
 def initialize_builder(

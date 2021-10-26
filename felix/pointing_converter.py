@@ -33,8 +33,8 @@ See pointing_converter_test.py for examples.
 import collections
 
 from typing import Iterable, List, Text
-from felix import pointing
-from felix import utils
+import pointing
+import utils
 
 
 class PointingConverter(object):

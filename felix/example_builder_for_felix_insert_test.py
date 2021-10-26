@@ -18,7 +18,7 @@ import collections
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from felix import example_builder_for_felix_insert as builder
+import example_builder_for_felix_insert as builder
 
 
 class ExampleBuilderTest(parameterized.TestCase):

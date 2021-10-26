@@ -22,11 +22,11 @@ from typing import Mapping, MutableSequence, Optional, Sequence, Tuple
 import frozendict
 import tensorflow as tf
 
-from felix import felix_constants as constants
-from felix import insertion_converter
-from felix import pointing_converter
-from felix import tokenization
-from felix import utils
+import felix_constants as constants
+import insertion_converter
+import pointing_converter
+import tokenization
+import utils
 
 
 class BertExample:

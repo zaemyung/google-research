@@ -31,7 +31,7 @@ from absl import logging
 import numpy as np
 import scipy.sparse
 
-from felix import tokenization
+import tokenization
 
 
 def compute_lcs(source, target):
