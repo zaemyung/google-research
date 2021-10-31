@@ -75,7 +75,7 @@ flags.DEFINE_integer(
     'This is achieved by reporting to TF an epoch size that is '
     '"flag value"-times smaller than the true value.')
 
-flags.DEFINE_enum('input_format', None, ['discofuse', 'wikisplit'],
+flags.DEFINE_enum('input_format', None, ['discofuse', 'wikisplit', 'IteraTE_Plain', 'IteraTE_Intent'],
                   'File format for input.')
 
 flags.DEFINE_string(

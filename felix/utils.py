@@ -19,6 +19,7 @@ import json
 from typing import Callable, Iterator, Mapping, MutableSequence, NamedTuple, Optional, Sequence, Tuple, Union
 
 from absl import logging
+from six import with_metaclass
 import tensorflow as tf
 
 import felix_constants as constants
@@ -261,6 +262,32 @@ def parse_discofuse_line(line):
   return [incoherent_1, incoherent_2], fusion
 
 
+def parse_iterate_plain_line(line):
+  return _parse_iterate_line(line, with_intent=False)
+
+
+def parse_iterate_intent_line(line):
+  return _parse_iterate_line(line, with_intent=True)
+
+
+def _parse_iterate_line(line, with_intent=False):
+  """Parses a IteraTE example from a line from a (line-by-line) JSON file.
+
+  Args:
+    line: A JSON line from a line-by-line JSON file.
+
+  Returns:
+    A tuple ([source], target), with `source` being wrapped in a list.
+  """
+  json_line = json.loads(line)
+  if with_intent:
+    src = json_line["before_sent_with_intent"]
+  else:
+    src = json_line["before_sent"]
+  tgt = json_line["after_sent"]
+  return [src], tgt
+
+
 def yield_sources_and_targets(
     input_file_pattern,
     input_format,
@@ -282,6 +309,8 @@ def yield_sources_and_targets(
   data_spec = {
       "wikisplit": (text_file_iterator, get_parse_tsv_line_fn()),
       "discofuse": (skip_header_text_file_iterator, parse_discofuse_line),
+      "IteraTE_Plain": (skip_header_text_file_iterator, parse_iterate_plain_line),
+      "IteraTE_Intent": (skip_header_text_file_iterator, parse_iterate_intent_line),
   }
 
   if input_format not in data_spec:
