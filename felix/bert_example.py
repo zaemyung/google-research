@@ -328,7 +328,8 @@ class BertExampleBuilder:
       List of WordPieces.
     """
     bert_tokens = []  # Original tokens split into wordpieces.
-    special_tokens = {'<::::>', constants.SEP.lower(), constants.CLS.lower()}
+    special_tokens = {'<::::>', constants.SEP.lower(), constants.CLS.lower(), 
+                      '<fluency>', '<coherence>', '<clarity>', '<style>', '<others>', '<meaning-changed>'}
     for token in tokens:
 
       # Don't tokenize special tokens.
