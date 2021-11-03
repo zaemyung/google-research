@@ -182,7 +182,7 @@ def run_train(bert_config,
 
   logging.info('Starting training from iteration: %s.', checkpoint_iteration)
   summary_dir = os.path.join(model_dir, 'summaries')
-  summary_cb = tf.keras.callbacks.TensorBoard(summary_dir, update_freq=1000)
+  #  summary_cb = tf.keras.callbacks.TensorBoard(summary_dir, update_freq=1000)
 
   manager = tf.train.CheckpointManager(
       checkpoint, directory=model_dir, max_to_keep=FLAGS.keep_checkpoint_max,
@@ -190,7 +190,8 @@ def run_train(bert_config,
   checkpoint_cb = CheckPointSaver(manager, current_mini_epoch)
   time_history_cb = keras_utils.TimeHistory(FLAGS.train_batch_size,
                                             FLAGS.log_steps)
-  training_callbacks = [summary_cb, checkpoint_cb, time_history_cb]
+  #  training_callbacks = [summary_cb, checkpoint_cb, time_history_cb]
+  training_callbacks = [checkpoint_cb, time_history_cb]
   pretrain_model.fit(
       train_dataset,
       initial_epoch=current_mini_epoch,

@@ -1,3 +1,6 @@
 tensorflow-gpu==2.5.0
 tensorflow-text==2.5.0
 frozendict==1.2
+scipy
+gin-config
+tensorflow-addons

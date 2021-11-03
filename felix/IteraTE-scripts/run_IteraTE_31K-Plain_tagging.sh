@@ -1,19 +1,21 @@
 #!/bin/bash
 #SBATCH --mem=0
 #SBATCH --gres=gpu:1
-#SBATCH --output=/tmp-network/user/zaemyung-kim/tmp/%j-disco.log
+#SBATCH --constraint="gpu_v100"
+#SBATCH --output=/tmp-network/user/zaemyung-kim/slurm_logs/%j-IteraTE.log
 #SBATCH -p gpu
 
-cd /tmp-network/user/zaemyung-kim/google-research/felix
+cd /tmp-network/user/zaemyung-kim/projects/IteraTE/google-research/felix
 
-. env/bin/activate
+. /tmp-network/user/zaemyung-kim/projects/IteraTE/env/bin/activate
 
 # Please update these paths.
-export OUTPUT_DIR=/tmp-network/user/zaemyung-kim/projects/IteraTE/exp/31K
-export BERT_BASE_DIR=/tmp-network/user/zaemyung-kim/models/BERT/uncased_L-12_H-768_A-12
-export DISCOFUSE_DIR=/tmp-network/user/zaemyung-kim/projects/IteraTE/data/release
-export FELIX_CONFIG_DIR=/tmp-network/user/zaemyung-kim/google-research/felix/discofuse
+export OUTPUT_DIR=/tmp-network/user/zaemyung-kim/projects/IteraTE/output_dir/31K_Plain
+export BERT_BASE_DIR=/tmp-network/user/zaemyung-kim/projects/IteraTE/BERT-uncased_L-12_H-768_A-12
+export DISCOFUSE_DIR=/tmp-network/user/zaemyung-kim/projects/IteraTE/IteraTE-repo/data/release
+export FELIX_CONFIG_DIR=/tmp-network/user/zaemyung-kim/projects/IteraTE/google-research/felix/discofuse
 export PREDICTION_FILE=${OUTPUT_DIR}/pred.tsv
+
 # If you wish to use another dataset please switch from input_format=discofuse
 # to wikisplit. wikisplit expects tab seperated source target pairs.
 # export INPUT_FORMAT="IteraTE_Intent"
@@ -23,7 +25,7 @@ export INPUT_FORMAT="IteraTE_Plain"
 export USE_POINTING='True'
 
 # Need to clone: git clone https://github.com/tensorflow/models.git
-export PYTHONPATH=$PYTHONPATH:/tmp-network/user/zaemyung-kim/google-models
+export PYTHONPATH=$PYTHONPATH:/tmp-network/user/zaemyung-kim/projects/IteraTE/google-models
 
 
 # # Label map construction
@@ -32,9 +34,9 @@ export PYTHONPATH=$PYTHONPATH:/tmp-network/user/zaemyung-kim/google-models
 # --output="${OUTPUT_DIR}/label_map.json" \
 # --use_pointing="${USE_POINTING}" \
 # --do_lower_case="True"
-
-# Preprocess
-# echo "Preprocessing data"
+#
+# # Preprocess
+# echo "Preprocessing data - Train"
 # python preprocess_main.py \
 #   --input_file="${DISCOFUSE_DIR}/train_sent_for_generation_31K.json" \
 #   --input_format="${INPUT_FORMAT}" \
@@ -47,6 +49,7 @@ export PYTHONPATH=$PYTHONPATH:/tmp-network/user/zaemyung-kim/google-models
 #   --use_pointing="${USE_POINTING}" \
 #   --split_on_punc="True"
 #
+# echo "Preprocessing data - Dev"
 # python preprocess_main.py \
 #   --input_file="${DISCOFUSE_DIR}/dev_sent_for_generation_31K.json" \
 #   --input_format="${INPUT_FORMAT}" \
@@ -70,10 +73,10 @@ python run_felix.py \
     --bert_config_tagging="${FELIX_CONFIG_DIR}/felix_config.json" \
     --max_seq_length=128 \
     --num_train_epochs=20 \
-    --train_batch_size="32" \
     --num_train_examples=141707 \
     --num_eval_examples=18404 \
-    --eval_batch_size="32" \
+    --train_batch_size="16" \
+    --eval_batch_size="16" \
     --log_steps="50" \
     --steps_per_loop="50" \
     --train_insertion="False" \
@@ -95,13 +98,13 @@ python run_felix.py \
 #     --num_train_epochs=20 \
 #     --num_train_examples=134683 \
 #     --num_eval_examples=17325 \
-#     --train_batch_size="32" \
-#     --eval_batch_size="32" \
-#     --log_steps="100" \
-#     --steps_per_loop="100" \
+#     --train_batch_size="16" \
+#     --eval_batch_size="16" \
+#     --log_steps="50" \
+#     --steps_per_loop="50" \
 #     --train_insertion="False" \
-#     --init_checkpoint="${BERT_BASE_DIR}/bert_model.ckpt" \
 #     --use_pointing="${USE_POINTING}" \
+#     --init_checkpoint="${BERT_BASE_DIR}/bert_model.ckpt" \
 #     --learning_rate="0.00006" \
 #     --pointing_weight="1" \
 #     --train_insertion="True"
@@ -116,7 +119,7 @@ python run_felix.py \
 # --label_map_file="${OUTPUT_DIR}/label_map.json" \
 # --vocab_file="${BERT_BASE_DIR}/vocab.txt" \
 # --max_seq_length=128 \
-# --predict_batch_size=64 \
+# --predict_batch_size=16 \
 # --do_lower_case="True" \
 # --use_open_vocab="True" \
 # --bert_config_tagging="${FELIX_CONFIG_DIR}/felix_config.json" \
