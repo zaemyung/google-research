@@ -101,7 +101,10 @@ def build_feed_dict(tokens,
     input_mask.append(0)
 
   if len(input_ids) > max_seq_length:
-    return None
+    input_ids = input_ids[:max_seq_length]
+    segment_ids = segment_ids[:max_seq_length]
+    input_mask = input_mask[:max_seq_length]
+    #return None
 
   assert len(input_ids) == max_seq_length, "len(input_ids) = {}".format(
       len(input_ids))
@@ -111,7 +114,8 @@ def build_feed_dict(tokens,
       len(segment_ids))
 
   if len(mask_position) > max_predictions_per_seq:
-    return None
+    mask_position = mask_position[:max_predictions_per_seq]
+    #return None
   while len(mask_position) < max_predictions_per_seq:
     mask_target_weight.append(0)
     mask_position.append(0)
