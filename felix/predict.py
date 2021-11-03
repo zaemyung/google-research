@@ -247,9 +247,29 @@ class FelixPredictor:
                     ]) for k in batch_dictionaries[0]
     })
     return batch_dictionaries, batch_list
+  
+  def pad_all_lists(self, val):
+    dtype = type(val[0][0])
+    seq_len = [len(v.tolist()) for v in val]
+    max_seq_len = max(seq_len)
+    vals = []
+    for v in val:
+      v = v.tolist()
+      if len(v) < max_seq_len:
+        v += [0]*(max_seq_len - len(v))
+      vals.append(v)
+    val = np.asarray(vals).astype(dtype)
+    return val
 
   def _predict_batch(self, source_batch, is_insertion):
     """Produce output from tensorflow model."""
+    for key, val in source_batch.items():
+      if key in ['masked_lm_ids', 'masked_lm_weights']:
+        val = self.pad_all_lists(val)
+      else:
+        val = np.asarray(val).astype(type(val[0][0]))
+      
+      source_batch[key] = tf.convert_to_tensor(val)
     if is_insertion:
       if self._insertion_model is None:
         self._load_model(is_insertion=True)
@@ -300,6 +320,7 @@ class FelixPredictor:
         continue
 
       if token.lower() == constants.MASK.lower():
+        if current_mask >= len(predicted_tokens): continue
         new_tokens.append(
             self._builder.tokenizer.convert_ids_to_tokens(
                 [predicted_tokens[current_mask]])[0])
