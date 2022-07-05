@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 The Google Research Authors.
+# Copyright 2022 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,10 @@ def train(flags):
 
   # Start a new TensorFlow session.
   tf.reset_default_graph()
-  config = tf.ConfigProto()
+
+  # allow_soft_placement solves issue with
+  # "No device assignments were active during op"
+  config = tf.ConfigProto(allow_soft_placement=True)
   config.gpu_options.allow_growth = True
   sess = tf.Session(config=config)
   tf.keras.backend.set_session(sess)

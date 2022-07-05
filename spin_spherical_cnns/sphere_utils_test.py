@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 The Google Research Authors.
+# Copyright 2022 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ class SphereUtilsTest(tf.test.TestCase, parameterized.TestCase):
   def test_compute_all_wigner_delta_matches_single(self, ell_max, ell):
     wigner_deltas = sphere_utils.compute_all_wigner_delta(ell_max)
     wigner_delta = sphere_utils.compute_wigner_delta(ell)
-    self.assertAllClose(wigner_deltas[ell][:, ell:], wigner_delta)
+    self.assertAllClose(wigner_deltas[ell], wigner_delta)
 
 
 if __name__ == "__main__":

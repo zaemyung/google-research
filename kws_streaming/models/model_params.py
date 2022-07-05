@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 The Google Research Authors.
+# Copyright 2022 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -433,6 +433,8 @@ def bc_resnet_params():
   params.first_filters = 2
   params.last_filters = 2
   params.sub_groups = 1
+  params.max_pool = 0
+  params.pools = '1, 1'
   return params
 
 

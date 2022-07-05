@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 The Google Research Authors.
+# Copyright 2022 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ class SpinSphericalClassifierTest(tf.test.TestCase, parameterized.TestCase):
     # because the local pooling introduces equivariance errors.
     self.assertAllClose(rotated_output, output, atol=1e-1)
     self.assertLess(_normalized_mean_absolute_error(output, rotated_output),
-                    0.1)
+                    0.11)
 
 
 class CNNClassifierTest(tf.test.TestCase, parameterized.TestCase):

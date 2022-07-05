@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 The Google Research Authors.
+# Copyright 2022 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Lint as: python3
 """Functions to cull empty space based on a low-res grid."""
 
 import numpy as np
@@ -27,7 +26,7 @@ def crop_alpha_grid(render_params,
                     atlas_params,
                     scene_params,
                     culling_grid_alpha,
-                    percentile_threshold=0.5,
+                    percentile_threshold=0.4,
                     dilation_factor=1.1):
   """Crops the grid to the smallest 3D bounding box which contains the scene.
 
