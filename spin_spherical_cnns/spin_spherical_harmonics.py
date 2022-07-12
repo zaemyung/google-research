@@ -39,7 +39,6 @@ resolutions and spins, as required by a SWSCNN model, and also encapsulates the
 forward and inverse transforms.
 """
 
-import functools
 from typing import Collection, Optional, Union
 import jax
 import jax.numpy as jnp
@@ -178,7 +177,7 @@ class SpinSphericalFourierTransformer:
     torus = jnp.concatenate([sphere, torus], axis=0)
     weights = self.quadrature_weights[n]
     torus = jnp.einsum("i,i...->i...", weights, torus)
-    coeffs = _fft2(torus) * 2 * jnp.pi / n
+    coeffs = _fourier_transform_2d(torus) * 2 * jnp.pi / n
 
     return coeffs
 
@@ -260,30 +259,42 @@ class SpinSphericalFourierTransformer:
 
     return jnp.einsum("ik,ijk,jk->ik", forward_constants, deltas, Jnm)
 
-  def _compute_Gnm(self, coeffs, spin):  # pylint: disable=invalid-name
-    """Computes Gnm (vectorized).
+  def _compute_Gnm_spins_channels(self,  # pylint: disable=invalid-name
+                                  coeffs_set,
+                                  spins):
+    """Computes Gnm for multiple spins and channels.
 
     See np_spin_spherical_harmonics._compute_Gnm_naive() for details.
 
     Args:
-      coeffs: see swsft_backward().
-      spin: see swsft_backward().
+      coeffs_set: An (ell_max+1, 2*ell_max+1, n_spins, n_channels) array of
+        SWSFT coefficients.
+      spins: An (n_spins,) list of int spin weights.
 
     Returns:
-      A (2*ell_max+1, 2*ell_max+1) complex64 matrix, when coeffs has ell_max+1
-      rows.
+      A (2*ell_max+1, 2*ell_max+1, n_spins, n_channels) complex64
+      matrix.
     """
-    ell_max = coeffs.shape[0] - 1
+    ell_max = coeffs_set.shape[0] - 1
+    expanded_spins = jnp.expand_dims(jnp.array(spins), 0)
     # Backward constants relates to forward via these signs.
-    signs = (-1.)**(spin + jnp.arange(-ell_max, ell_max+1))[None, :]
-    backward_constant = self._slice_forward_constants(ell_max, spin) * signs
+    signs = (-1.)**(expanded_spins +
+                    jnp.expand_dims(jnp.arange(-ell_max, ell_max+1), 1))[None]
+    constants = jnp.stack([self._slice_forward_constants(ell_max, spin)
+                           for spin in spins], axis=-1) * signs
     deltas = self._slice_wigner_deltas(ell_max, include_negative_m=True)
-    deltas_s = deltas[Ellipsis, ell_max - spin]
+    deltas_s = jnp.stack([deltas[Ellipsis, ell_max - spin]
+                          for spin in spins], axis=-1)
 
-    return jnp.einsum("lm,lnm,ln->nm",
-                      backward_constant * coeffs,
-                      deltas,
-                      deltas_s)
+    factors = jnp.einsum("lms,lnm,lns->lnms",
+                         constants, deltas, deltas_s)
+    return jnp.einsum("lnms,lmsc->nmsc",
+                      factors, coeffs_set)
+
+  def _compute_Gnm(self, coeffs, spin):  # pylint: disable=invalid-name
+    """Computes Gnm for a single function. See `_compute_Gnm_spins_channels`."""
+    return self._compute_Gnm_spins_channels(jnp.expand_dims(coeffs, [2, 3]),
+                                            [spin])[Ellipsis, 0, 0]
 
   def _compute_Gnm_with_symmetry(self, coeffs, spin):  # pylint: disable=invalid-name
     """Same as `_compute_Gnm` but with fewer operations."""
@@ -317,19 +328,15 @@ class SpinSphericalFourierTransformer:
       ft = self._compute_Gnm_with_symmetry(coeffs, spin)
     else:
       ft = self._compute_Gnm(coeffs, spin)
+
+    # Padding then shifting seem more efficient than the converse here.
+    ft = jnp.pad(ft, [(ell_max+1, ell_max), (1, 0)])
     ft = jnp.fft.ifftshift(ft)
 
-    # Zero-pad to final dimension before FFT. This is the torus extension, so we
-    # only want the top half.
-    ft = jnp.concatenate([ft[:, :ell_max+1],
-                          jnp.zeros((2*ell_max+1, 1)),
-                          ft[:, ell_max+1:]], axis=1)
-    ft = jnp.concatenate([ft[:ell_max+1],
-                          jnp.zeros_like(ft),
-                          ft[ell_max+1:]])
-
-    # Return the top half.
-    return _ifft2(ft)[:2*(ell_max+1)] * ft.size
+    # Since only half of the 2D IFFT is needed, it is faster to slice
+    # after the first 1D IFFT.
+    rowwise = jnp.fft.ifft(ft, axis=0)[:2*(ell_max + 1)]
+    return jnp.fft.ifft(rowwise, axis=1) * ft.size
 
   def swsft_backward(self, coeffs, spin):
     """Inverse spin-weighted spherical harmonics transform (fast JAX version).
@@ -381,7 +388,7 @@ class SpinSphericalFourierTransformer:
     forward_constants = jnp.stack([self._slice_forward_constants(ell_max, spin)
                                    for spin in spins], axis=-1)
 
-    return jnp.einsum("lns,lmn,lms,mns...->lns...",
+    return jnp.einsum("lms,lnm,lns,nms...->lms...",
                       forward_constants, deltas, deltas_s, Inm)
 
   def swsft_forward_spins_channels_with_symmetry(
@@ -404,23 +411,31 @@ class SpinSphericalFourierTransformer:
     return jnp.einsum("lms,lnm,lns,nms...->lms...",
                       forward_constants, deltas, deltas_s, Jnm)
 
-  @functools.partial(jax.vmap, in_axes=(None, -1, None), out_axes=-1)
   def swsft_backward_spins_channels(self,
                                     coeffs_set,
                                     spins):
-    """Applies swsft_backward() to multiple stacked spins and channels.
+    """Applies swsft_backward() to multiple stacked spins and channels."""
+    ell_max = coeffs_set.shape[0] - 1
+    for spin in spins:
+      if not self.validate(resolution=2*(ell_max + 1), spin=spin):
+        raise ValueError("Constants are invalid for given input!")
 
-    Args:
-      coeffs_set: An (ell_max+1, 2*ell_max+1, n_spins, n_channels) array of
-        SWSFT coefficients.
-      spins: An (n_spins,) list of int spin weights.
+    ft = self._compute_Gnm_spins_channels(coeffs_set, spins)
 
-    Returns:
-      A (2*ell_max + 2, 2*ell_max + 2, n_spins, n_channels) complex64 array of
-      spin-weighted spherical functions.
-    """
-    return jnp.stack([self.swsft_backward(coeffs_set[Ellipsis, i], spin)
-                      for i, spin in enumerate(spins)], axis=-1)
+    # Padding then shifting seem more efficient than the converse here.
+    ft = jnp.pad(ft, [(ell_max+1, ell_max), (1, 0), (0, 0), (0, 0)])
+    ft = jnp.fft.ifftshift(ft, axes=(0, 1))
+
+    # For the dimensions we typically have here, computing the naive
+    # FT by multiplying by the IDFT matrix is significantly faster
+    # than the FFT (at least on TPU).
+    idft_matrix = jnp.fft.ifft(jnp.eye(ft.shape[0]))
+    # Since only half of the 2D IFFT is needed, it is faster to slice
+    # after the first 1D IFFT.
+    rowwise = jnp.einsum("ij,j...->i...", idft_matrix, ft)[:2*(ell_max + 1)]
+    num_elements = ft.shape[0] * ft.shape[1]
+    idft_matrix = jnp.fft.ifft(jnp.eye(ft.shape[1]))
+    return jnp.einsum("ij,kj...->ki...", idft_matrix, rowwise) * num_elements
 
 # This makes SpinSphericalFourierTransformer a jit-able JAX type. See
 # https://github.com/google/jax/issues/806 for discussion.
@@ -454,13 +469,12 @@ def coefficients_to_matrix(coeffs):
   return jnp.stack(matrix)
 
 
-def _fft2(x):
-  """Computes the 2D FFT (because JAX does not have a 2D FFT TPU kernel)."""
-  rowwise = jnp.fft.fft(x, axis=0)
-  return jnp.fft.fft(rowwise, axis=1)
-
-
-def _ifft2(x):
-  """Computes the 2D IFFT (because JAX does not have a 2D FFT TPU kernel)."""
-  rowwise = jnp.fft.ifft(x, axis=0)
-  return jnp.fft.ifft(rowwise, axis=1)
+def _fourier_transform_2d(x):
+  """Compute the 2D Fourier Transform for the first two dimensions."""
+  # For the dimensions we typically have here, computing the naive
+  # FT by multiplying by the DFT matrix is significantly faster than
+  # the FFT (at least on TPU).
+  dft_matrix = jnp.fft.fft(jnp.eye(x.shape[0]))
+  rowwise = jnp.einsum("ij,j...->i...", dft_matrix, x)
+  dft_matrix = jnp.fft.fft(jnp.eye(x.shape[1]))
+  return jnp.einsum("ij,kj...->ki...", dft_matrix, rowwise)
